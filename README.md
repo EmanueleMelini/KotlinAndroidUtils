@@ -14,6 +14,6 @@ repositories {
 and the code below to the application level ```build.gradle```
 ```
 dependencies {
-    implementation 'com.github.EmanueleMelini:KotlinAndroidUtils:1.0.0'
+    implementation 'com.github.EmanueleMelini:KotlinAndroidUtils:VERSION'
 }
  ```
