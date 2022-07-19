@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.*
 import android.view.View
@@ -11,12 +12,14 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.afollestad.materialdialogs.MaterialDialog
 import it.emanuelemelini.kotlinadroidutils.CONN_ERROR
 import it.emanuelemelini.kotlinadroidutils.R
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.timerTask
@@ -268,7 +271,7 @@ fun <T : Activity> Context.goFinishNoTransactionWithExtras(ac: Class<T>, extras:
 
 /**
  * A function that shows a [MaterialDialog] with given title, message, buttons text and actions
- * @param[c] A Context
+ * @receiver[Context] A Context
  * @param[title] A [StringRes] id of a string to be displayed as the dialog title
  * @param[message] A [StringRes] id of a string to be displayed as the dialog message
  * @param[positive] A [StringRes] id of a string to be displayed as the positive button text, if null the button will not be displayed
@@ -284,6 +287,30 @@ fun Context.dialog(@StringRes title: Int, @StringRes message: Int, @StringRes po
                 posAction(this)
             }
             if(negative != null) negativeButton(res = negative) {
+                negAction(this)
+            }
+        }
+    }
+}
+
+/**
+ * A function that shows a [MaterialDialog] with given title, message, buttons text and actions
+ * @receiver[Context] A Context
+ * @param[title] A [String] to be displayed as the dialog title
+ * @param[message] A [String] to be displayed as the dialog message
+ * @param[positive] A [String] to be displayed as the positive button text, if null the button will not be displayed
+ * @param[negative] A [String] to be displayed as the negative button text, if null the button will not be displayed
+ * @param[posAction] A function to be invoked on positive button click
+ * @param[negAction] A function to be invoked on negative button click
+ */
+fun Context.dialog(title: String, message: String, positive: String?, negative: String?, posAction: (MaterialDialog) -> Unit, negAction: (MaterialDialog) -> Unit) {
+    MaterialDialog(this).show {
+        title(text = title)
+        message(text = message).apply {
+            if(positive != null) positiveButton(text = positive) {
+                posAction(this)
+            }
+            if(negative != null) negativeButton(text = negative) {
                 negAction(this)
             }
         }
@@ -416,5 +443,27 @@ fun Activity?.hideKeyboard() {
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     } catch(ex: Exception) {
         ex.printStackTrace()
+    }
+}
+
+/**
+ * An extension function which open the given config file and searchs for the given string
+ * @param[name] A [String] to search in the config file
+ * @param[config] A [RawRes] [Int] id of the config file
+ * @receiver[Context] A Context
+ * @return The string associated with the given string if found, null if not found
+ */
+fun Context.getConfig(name: String?, @RawRes config: Int): String? {
+    return try {
+        val rawResource = resources.openRawResource(config)
+        val properties = Properties()
+        properties.load(rawResource)
+        properties.getProperty(name)
+    } catch(e: Resources.NotFoundException) {
+        e.printStackTrace()
+        null
+    } catch(e: IOException) {
+        e.printStackTrace()
+        null
     }
 }
