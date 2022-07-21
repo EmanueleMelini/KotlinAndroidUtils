@@ -4,14 +4,20 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.*
+import android.text.Spannable
+import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.ColorInt
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -466,4 +472,47 @@ fun Context.getConfig(name: String?, @RawRes config: Int): String? {
         e.printStackTrace()
         null
     }
+}
+
+
+/**
+ * An extension function which checks if the device is on Night mode
+ * @receiver[Context] A context
+ * @return True if the device is in Night mode, False if not or it can't be defined
+ */
+fun Context.isNightMode(): Boolean {
+    return when (resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)) {
+        Configuration.UI_MODE_NIGHT_YES -> { true }
+        Configuration.UI_MODE_NIGHT_NO -> { false }
+        Configuration.UI_MODE_NIGHT_UNDEFINED -> { false }
+        else -> { false }
+    }
+}
+
+/**
+ * An extension function which change text color, underline and add an action on click on a part of the receiver [TextView]
+ * @param[from] The starting part of the string to underline
+ * @param[to] The ending part of the string to underline
+ * @param[color] The color used for the text color and underline
+ * @param[action] The action to do on click
+ * @receiver[TextView] A textview
+ */
+fun TextView.toUnderlinedClickable(from: String, to: String, @ColorInt color: Int, action: () -> Unit) {
+    val span = text as Spannable
+    val textString = text.toString()
+
+    val iFrom = textString.indexOf(from)
+    val iTo = textString.indexOf(to) + to.length
+
+    val fcsColor = ForegroundColorSpan(color)
+
+    val clickableSpan = object: ClickableSpan() {
+        override fun onClick(widget: View) {
+            action()
+        }
+    }
+
+    span.setSpan(clickableSpan, iFrom, iTo, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    span.setSpan(fcsColor, iFrom, iTo, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+
 }
