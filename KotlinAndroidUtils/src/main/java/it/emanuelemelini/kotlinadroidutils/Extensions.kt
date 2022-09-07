@@ -508,7 +508,7 @@ fun Context.isNightMode(): Boolean {
  * @param[action] The action to do on click
  * @receiver[TextView] A textview
  */
-fun TextView.toUnderlinedClickable(from: String, to: String, @ColorInt color: Int, action: () -> Unit) {
+fun TextView.toUnderlinedClickable(from: String, to: String, @ColorInt color: Int, action: () -> Unit): TextView {
     val spanString = SpannableString(text)
     val textString = text.toString()
     val iFrom = textString.indexOf(from)
@@ -523,6 +523,7 @@ fun TextView.toUnderlinedClickable(from: String, to: String, @ColorInt color: In
     spanString.setSpan(fcsColor, iFrom, iTo, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
     text = spanString
     movementMethod = LinkMovementMethod.getInstance()
+    return this
 }
 
 /**
