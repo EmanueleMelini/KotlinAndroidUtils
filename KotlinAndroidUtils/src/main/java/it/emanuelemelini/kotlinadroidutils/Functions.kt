@@ -1,9 +1,12 @@
 package it.emanuelemelini.kotlinadroidutils
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.view.View
 import androidx.annotation.IntDef
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 
@@ -22,7 +25,7 @@ annotation class Visibility {}
  * @param[views] An [Array] or varargs of [View]
  */
 fun setVisible(vararg views: View) {
-    for(v in views) {
+    for (v in views) {
         v.visibility = View.VISIBLE
     }
 }
@@ -32,7 +35,7 @@ fun setVisible(vararg views: View) {
  * @param[views] An [Array] or varargs of [View]
  */
 fun setGone(vararg views: View) {
-    for(v in views) {
+    for (v in views) {
         v.visibility = View.GONE
     }
 }
@@ -43,7 +46,7 @@ fun setGone(vararg views: View) {
  * @param[views] An [Array] or varargs of [View]
  */
 fun setVisibility(@Visibility vis: Int, vararg views: View) {
-    for(v in views) {
+    for (v in views) {
         v.visibility = vis
     }
 }
@@ -86,4 +89,23 @@ fun getRandomString(length: Int): String {
     return (1..length)
         .map { allowedChars.random() }
         .joinToString("")
+}
+
+/**
+ * A function which create an encrypted instance of [SharedPreferences] ([EncryptedSharedPreferences]) with the given file name
+ * @param[file] A string containing the name of the file
+ * @param[applicationContext] the Application Context
+ * @return An encrypted instance of [SharedPreferences]
+ */
+fun getEncryptedShared(file: String, applicationContext: Context): SharedPreferences {
+    val masterKey = MasterKey.Builder(applicationContext, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+    return EncryptedSharedPreferences.create(
+        applicationContext,
+        file,
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 }

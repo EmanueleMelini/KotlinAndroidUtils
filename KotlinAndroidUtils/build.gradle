@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace 'it.emanuelemelini.kotlinadroidutils'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 24
-        targetSdk 32
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -38,8 +38,11 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
     implementation 'com.afollestad:recyclical:1.1.1'
 
+    //Security
+    implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.android.gms:play-services-base:18.1.0'
     testImplementation 'junit:junit:4.13.2'
@@ -55,7 +58,7 @@ afterEvaluate {
 
                 groupId = 'com.github.EmanueleMelini'
                 artifactId = 'KotlinAndroidUtils'
-                version = '1.0.4'
+                version = '1.1.0'
             }
         }
     }

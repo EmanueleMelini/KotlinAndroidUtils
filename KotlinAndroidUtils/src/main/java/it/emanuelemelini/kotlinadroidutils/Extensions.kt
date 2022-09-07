@@ -3,12 +3,15 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.*
-import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.view.View
@@ -44,7 +47,7 @@ fun Context.simpleToast(str: String) {
         runOnUiThread {
             Toast.makeText(this, str, Toast.LENGTH_LONG).show()
         }
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         throw ex
     }
 }
@@ -61,7 +64,7 @@ fun Context.simpleToast(@StringRes res: Int) {
         runOnUiThread {
             Toast.makeText(this, res, Toast.LENGTH_LONG).show()
         }
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         throw ex
     }
 }
@@ -77,7 +80,7 @@ fun Context.connErrorToast() {
         runOnUiThread {
             Toast.makeText(this, CONN_ERROR, Toast.LENGTH_LONG).show()
         }
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         throw ex
     }
 }
@@ -112,7 +115,7 @@ fun View.setGone() {
  * @receiver[View] - A View
  */
 fun View.toggleVisibility() {
-    visibility = if(visibility == View.VISIBLE) View.GONE else View.VISIBLE
+    visibility = if (visibility == View.VISIBLE) View.GONE else View.VISIBLE
 }
 
 /**
@@ -120,7 +123,7 @@ fun View.toggleVisibility() {
  * @receiver[Int] - An Integer
  * @return An [Int] containint the length of the receiver
  */
-fun Int.length() = when(this) {
+fun Int.length() = when (this) {
     0 -> 1
     else -> log10(abs(toDouble())).toInt() + 1
 }
@@ -162,7 +165,7 @@ fun <T : Activity> Context.goNoTransaction(ac: Class<T>) {
         this as Activity
         startActivity(Intent(this, ac))
         overridePendingTransition(0, 0)
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         ex.printStackTrace()
         throw ex
     }
@@ -185,7 +188,7 @@ fun <T : Activity> Context.goNoTransactionWithExtras(ac: Class<T>, extras: Map<S
                 }
             })
         overridePendingTransition(0, 0)
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         ex.printStackTrace()
         throw ex
     }
@@ -202,7 +205,7 @@ fun <T : Activity> Context.goFinish(ac: Class<T>) {
         this as Activity
         startActivity(Intent(this, ac))
         finish()
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         ex.printStackTrace()
         throw ex
     }
@@ -225,7 +228,7 @@ fun <T : Activity> Context.goFinishWithExtras(ac: Class<T>, extras: Map<String, 
                 }
             })
         finish()
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         ex.printStackTrace()
         throw ex
     }
@@ -244,7 +247,7 @@ fun <T : Activity> Context.goFinishNoTransaction(ac: Class<T>) {
         overridePendingTransition(0, 0)
         finish()
         overridePendingTransition(0, 0)
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         ex.printStackTrace()
         throw ex
     }
@@ -269,7 +272,7 @@ fun <T : Activity> Context.goFinishNoTransactionWithExtras(ac: Class<T>, extras:
         overridePendingTransition(0, 0)
         finish()
         overridePendingTransition(0, 0)
-    } catch(ex: ClassCastException) {
+    } catch (ex: ClassCastException) {
         ex.printStackTrace()
         throw ex
     }
@@ -289,10 +292,10 @@ fun Context.dialog(@StringRes title: Int, @StringRes message: Int, @StringRes po
     MaterialDialog(this).show {
         title(res = title)
         message(res = message).apply {
-            if(positive != null) positiveButton(res = positive) {
+            if (positive != null) positiveButton(res = positive) {
                 posAction(this)
             }
-            if(negative != null) negativeButton(res = negative) {
+            if (negative != null) negativeButton(res = negative) {
                 negAction(this)
             }
         }
@@ -313,10 +316,10 @@ fun Context.dialog(title: String, message: String, positive: String?, negative: 
     MaterialDialog(this).show {
         title(text = title)
         message(text = message).apply {
-            if(positive != null) positiveButton(text = positive) {
+            if (positive != null) positiveButton(text = positive) {
                 posAction(this)
             }
-            if(negative != null) negativeButton(text = negative) {
+            if (negative != null) negativeButton(text = negative) {
                 negAction(this)
             }
         }
@@ -331,7 +334,7 @@ fun Context.dialog(title: String, message: String, positive: String?, negative: 
  * @throws[IllegalArgumentException] If the extra type isn't allowed
  */
 fun Intent.putAny(name: String, ex: Any) {
-    when(ex) {
+    when (ex) {
         is Bundle -> putExtra(name, ex)
         is Parcelable -> putExtra(name, ex)
         is Boolean -> putExtra(name, ex)
@@ -374,10 +377,10 @@ fun Intent.putAny(name: String, ex: Any) {
 fun AppCompatActivity.takePicture(picture: (Bitmap?) -> Unit): ActivityResultLauncher<Intent>? {
     return try {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if(it.resultCode == Activity.RESULT_OK)
+            if (it.resultCode == Activity.RESULT_OK)
                 picture(it.data?.extras?.get("data") as Bitmap)
         }
-    } catch(e: ActivityNotFoundException) {
+    } catch (e: ActivityNotFoundException) {
         e.printStackTrace()
         picture(null)
         null
@@ -410,7 +413,7 @@ fun Calendar.getString(format: String = "dd/MM/yyyy"): String {
  * @return true if the string is a valid email, false if the string is null or not valid
  */
 fun String?.isValidEmail(): Boolean {
-    if(this == null) return false
+    if (this == null) return false
     return android.util.Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
@@ -424,14 +427,14 @@ fun String?.isValidEmail(): Boolean {
 @SuppressLint("MissingPermission")
 fun Context?.vibrate(duration: Long = 500) {
     try {
-        if(this == null) return
+        if (this == null) return
         val v: Vibrator? = this.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             v?.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
             v?.vibrate(duration)
         }
-    } catch(ex: Exception) {
+    } catch (ex: Exception) {
         ex.printStackTrace()
     }
 }
@@ -442,12 +445,12 @@ fun Context?.vibrate(duration: Long = 500) {
  */
 fun Activity?.hideKeyboard() {
     try {
-        if(this == null) return
+        if (this == null) return
         val imm: InputMethodManager = this.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         var view: View? = this.currentFocus;
-        if(view == null) view = View(this)
+        if (view == null) view = View(this)
         imm.hideSoftInputFromWindow(view.windowToken, 0)
-    } catch(ex: Exception) {
+    } catch (ex: Exception) {
         ex.printStackTrace()
     }
 }
@@ -465,10 +468,10 @@ fun Context.getConfig(name: String?, @RawRes config: Int): String? {
         val properties = Properties()
         properties.load(rawResource)
         properties.getProperty(name)
-    } catch(e: Resources.NotFoundException) {
+    } catch (e: Resources.NotFoundException) {
         e.printStackTrace()
         null
-    } catch(e: IOException) {
+    } catch (e: IOException) {
         e.printStackTrace()
         null
     }
@@ -482,10 +485,18 @@ fun Context.getConfig(name: String?, @RawRes config: Int): String? {
  */
 fun Context.isNightMode(): Boolean {
     return when (resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)) {
-        Configuration.UI_MODE_NIGHT_YES -> { true }
-        Configuration.UI_MODE_NIGHT_NO -> { false }
-        Configuration.UI_MODE_NIGHT_UNDEFINED -> { false }
-        else -> { false }
+        Configuration.UI_MODE_NIGHT_YES -> {
+            true
+        }
+        Configuration.UI_MODE_NIGHT_NO -> {
+            false
+        }
+        Configuration.UI_MODE_NIGHT_UNDEFINED -> {
+            false
+        }
+        else -> {
+            false
+        }
     }
 }
 
@@ -498,21 +509,30 @@ fun Context.isNightMode(): Boolean {
  * @receiver[TextView] A textview
  */
 fun TextView.toUnderlinedClickable(from: String, to: String, @ColorInt color: Int, action: () -> Unit) {
-    val span = text as Spannable
+    val spanString = SpannableString(text)
     val textString = text.toString()
-
     val iFrom = textString.indexOf(from)
     val iTo = textString.indexOf(to) + to.length
-
     val fcsColor = ForegroundColorSpan(color)
-
-    val clickableSpan = object: ClickableSpan() {
+    val clickableSpan = object : ClickableSpan() {
         override fun onClick(widget: View) {
             action()
         }
     }
+    spanString.setSpan(clickableSpan, iFrom, iTo, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    spanString.setSpan(fcsColor, iFrom, iTo, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+    text = spanString
+    movementMethod = LinkMovementMethod.getInstance()
+}
 
-    span.setSpan(clickableSpan, iFrom, iTo, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-    span.setSpan(fcsColor, iFrom, iTo, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-
+/**
+ * An extension function that clear all the data inside the [SharedPreferences] given file
+ * @param[file] A [String] containing the name of the file to clear
+ * @receiver[Context] - A Context
+ */
+fun Context.emptyShared(file: String) {
+    getSharedPreferences(file, Context.MODE_PRIVATE)
+        .edit()
+        .clear()
+        .apply()
 }
