@@ -26,6 +26,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.callbacks.onDismiss
 import it.emanuelemelini.kotlinadroidutils.CONN_ERROR
 import it.emanuelemelini.kotlinadroidutils.R
 import java.io.IOException
@@ -288,7 +289,7 @@ fun <T : Activity> Context.goFinishNoTransactionWithExtras(ac: Class<T>, extras:
  * @param[posAction] A function to be invoked on positive button click
  * @param[negAction] A function to be invoked on negative button click
  */
-fun Context.dialog(@StringRes title: Int, @StringRes message: Int, @StringRes positive: Int?, @StringRes negative: Int?, posAction: (MaterialDialog) -> Unit, negAction: (MaterialDialog) -> Unit) {
+fun Context.dialog(@StringRes title: Int, @StringRes message: Int, @StringRes positive: Int?, @StringRes negative: Int?, posAction: (MaterialDialog) -> Unit, negAction: (MaterialDialog) -> Unit, dismissAction: ((MaterialDialog) -> Unit)? = null) {
     MaterialDialog(this).show {
         title(res = title)
         message(res = message).apply {
@@ -298,6 +299,14 @@ fun Context.dialog(@StringRes title: Int, @StringRes message: Int, @StringRes po
             if (negative != null) negativeButton(res = negative) {
                 negAction(this)
             }
+        }
+        onDismiss {
+            if (dismissAction != null)
+                dismissAction(this)
+            else if (negative != null)
+                negAction(this)
+            else if (positive != null)
+                posAction(this)
         }
     }
 }
@@ -312,7 +321,7 @@ fun Context.dialog(@StringRes title: Int, @StringRes message: Int, @StringRes po
  * @param[posAction] A function to be invoked on positive button click
  * @param[negAction] A function to be invoked on negative button click
  */
-fun Context.dialog(title: String, message: String, positive: String?, negative: String?, posAction: (MaterialDialog) -> Unit, negAction: (MaterialDialog) -> Unit) {
+fun Context.dialog(title: String, message: String, positive: String?, negative: String?, posAction: (MaterialDialog) -> Unit, negAction: (MaterialDialog) -> Unit, dismissAction: ((MaterialDialog) -> Unit)? = null) {
     MaterialDialog(this).show {
         title(text = title)
         message(text = message).apply {
@@ -322,6 +331,14 @@ fun Context.dialog(title: String, message: String, positive: String?, negative: 
             if (negative != null) negativeButton(text = negative) {
                 negAction(this)
             }
+        }
+        onDismiss {
+            if (dismissAction != null)
+                dismissAction(this)
+            else if (negative != null)
+                negAction(this)
+            else if (positive != null)
+                posAction(this)
         }
     }
 }
